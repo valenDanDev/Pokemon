@@ -3,7 +3,7 @@ const { UUID } = require("sequelize");
 const { UUIDV4 } = require("sequelize");
 
 module.exports = (sequelize) => {
-    // defino el modelo
+    // define model
     sequelize.define('type', {
   
       id:{
@@ -16,10 +16,5 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      
-    },{
-      timestamps: true,
-      createdAt: false,
-      updatedAt: 'updated'
     });
   };
