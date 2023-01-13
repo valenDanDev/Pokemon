@@ -1,82 +1,79 @@
+const { Router } = require('express');
+//const fetch=require('node-fetch');
+const { Pokemon,Type} = require("../db.js");
 
-const pokeSchema= require("../models/Pokemon.js")
-
-const getPokemons= async (req,res)=>{
-    try {
-        const {name} = req.query
-
-        if(name){
-            const pokemon = await pokeSchema.find();
-            const poke= pokemon.filter(e => e.name.toLowerCase().includes(name.toLowerCase()))
-            if(poke){
-                return res.status(200).json(poke)
-            }else{
-                return res.status(404).json({error: "Nombre invalido"})
-            }
-            
-        }else{
-            const pokemons = await pokeSchema.find()
-            return res.status(200).json(pokemons)
-        }
-    }
-    catch(error) {
-        return res.status(404).json({error:error.message})
-    }
-}
-
-const getPokemonsDetail = async(req,res) =>{
-    try {
-        const {id}= req.params;
-        if(!id){
-            return res.status(404).json({error: "No hay id"})
-        }
-        const pokemon = await pokeSchema.find({ _id: id });
-        return res.status(200).json(pokemon)
-    } catch (error) {
-        return res.status(404).json({error:error})
-    }
-}
-
-const postPokemons = async(req,res) =>{
-    try {
-        const {name,health,attack,defense,speed,height,weight, img, types}= req.body;
-        if( !name ||!health || !attack || !defense ||!speed ||!height ||!weight ||!img ||!types){
-            return res.status(404).json({error: "No hay suficientes datos"})
-        }
-        let id=Math.floor((Math.random() * (2000000000 - 1000 + 1)) + 1000)
-        const pokemon = await pokeSchema({name,health,attack,defense,speed,height,weight,img,types});
-        const createPokemon = await pokemon.save()
-
-        return res.status(200).json(createPokemon)
+// GET /pokemons:
+const getAllPokemons = async (req, res) => {
+    try {     
+        //bring all pokemons from API                                 
+        const apiPokemon = fetch("https://pokeapi.co/api/v2/pokemon?limit=40")
+            .then(data => data.json())
+            .then(json => Promise.all(json.results.map(poke => fetch(poke.url)
+                .then(data => data.json())
+            )))
+        //bring pokemons from database 
+        const dataBasePokemon = Pokemon.findAll({
+            include: {
+                model: Type,
+                attributes: ["name"],
+                through: {
+                    attributes: [],
+                }
+            }})
         
-    } catch (error) {
-        return res.status(404).json({error:error})
-    }
-}
+        return Promise.all([apiPokemon,dataBasePokemon])
 
-const deletePokemons=async(req,res)=>{
-    const { id } = req.params;
+        .then((pokemons) => { 
+            const apiPoke = pokemons[0].map( p => {
+                return {
+                    id_Pokemon: p.id,
+                    name: p.name,
+                    health: p.stats[0].base_stat,
+                    attack: p.stats[1].base_stat,
+                    defense: p.stats[2].base_stat, 
+                    speed: p.stats[5].base_stat, 
+                    height: p.height, 
+                    weight: p.weight,
+                    types: p.types.map(p => p.type.name),
+                    image: p.sprites.other["home"].front_default,
+                }});
+            
+            const dbPoke= pokemons[1].map( p => {
+        
+                return {
+                    id_Pokemon: p.id_Pokemon,
+                    name: p.name,
+                    health: p.health,
+                    attack: p.attack,
+                    defense: p.defense,
+                    speed: p.speed ,
+                    height: p.height, 
+                    weight: p.weight,
+                    types: p.Types.map(p => p.name),   
+                    image: p.image,
+                }
+            });
+        
+            const allPokemons = apiPoke.concat(dbPoke); 
 
-    try {
-        if(!id)return res.send("No ID was sent.")
-
-        await pokeSchema.findByIdAndDelete(id, function (err, pokemon) {
-            if (err){
-                console.log(err)
+            const name = req.query.name;
+            if (name) {
+                let pokemonByName = allPokemons.filter(poke => poke.name.toLowerCase().includes(name.toLowerCase()))
+                if(pokemonByName) {
+                    return res.status(200).send(pokemonByName);
+                } else{
+                    return res.status(404).send("Lo sentimos, el Pokemon no existe. Intenta con otro nombre");
+                }
             }
-            else{
-                console.log("Deleted : ", pokemon); 
-            }
-        });
-        return res.status(200).json({success:"Your pokemon was deleted successfully."})
+            res.status(200).send(allPokemons);
+            });
+
     } catch (error) {
-        return res.status(404).json({error:error.message})
+        return res.status(404).send(error.message)
     }
-}
+};
+
 
 module.exports={
-    getPokemons,
-    getPokemonsDetail,
-    postPokemons,
-    deletePokemons
+    getAllPokemons
 }
