@@ -57,7 +57,7 @@ const getAllPokemons= async (req, res) => {
 };
 
 // Obtener pokemon por ID
-/*async function getPokemonId() {
+const getPokemonId= async (req, res) => {
   const id = Number(req.params.idPokemon);
   if (typeof id === "number") {
     const pokemonDb = await Pokemon.findOne({
@@ -85,10 +85,10 @@ const getAllPokemons= async (req, res) => {
     }
   }
   return res.send("El ID debe ser un número").status(404);
-}*/
+}
 
 // Agregar pokemon a la DB
-/*async function addPokemon(req, res) {
+const addPokemon = async(req,res)=>{
   const { hp, attack, defense, speed, height, weight, image, type1, type2 } =
     req.body;
   let name = req.body.name.toLowerCase();
@@ -111,36 +111,17 @@ const getAllPokemons= async (req, res) => {
     const addType2 = await createdPokemon.addType(type2, {
       through: "pokemon_type",
     });
-    return res.status(200).send("El pokemon ha sido creado correctamente");
+    return res.status(200).send(createdPokemon);
   } catch (error) {
     return error;
   }
-}*/
+}
 
-// agregar tipos de pokemons a DB
-/*async function getPokemonTypes() {
-  let pokemonDb = await Type.findAll();
-  if (pokemonDb.length > 0) {
-    return pokemonDb;
-  } else {
-    const response = await axios.get("https://pokeapi.co/api/v2/type");
-    const data = Promise.all(
-      response.data.results.map(async (t, index) => {
-        let types = await Type.create({
-          id: index + 1,
-          name: t.name,
-        });
-        return types;
-      })
-    );
-    return data;
-  }
-}*/
+
 
 module.exports = {
-  //addPokemon,
+  addPokemon,
   getPokemonsAPI,
   getAllPokemons,
-  //getPokemonId,
-  //getPokemonTypes,
+  getPokemonId,
 };
