@@ -1,5 +1,6 @@
 const { Pokemon, Type } = require("../db.js");
 const axios = require("axios");
+const { Op } = require("sequelize");
 
 let dbID = 40;
 
@@ -87,11 +88,48 @@ const getPokemonId= async (req, res) => {
   return res.send("El ID debe ser un número").status(404);
 }
 
+const getPokemonByName= async (req,res)=>{
+  //console.log("get country by name");
+  const name =req.query.q;
+  try{
+    let coun= await Pokemon.findAll({
+      where: {
+        name:{
+          [Op.substring]: `%${name.toLowerCase()}%`
+        }
+      }, include: {
+        model: Type,
+        through: {
+          attributes: [],
+        },
+        attributes: ["name"],
+      },
+    });
+   
+    if(!Object.keys(coun).length){
+      const pokemonsApi = await getPokemonsAPI();
+      const foundPokemon = pokemonsApi.find((p) => p.name === name);
+      if (foundPokemon) {
+        return res.json(foundPokemon);
+      } else {
+        return res.status(404).json({
+          msg: `pokemon not found with name ${name}`
+      })
+      }
+    }
+    return res.status(200).json(coun)
+}catch(err){
+    return res.status(404).send(err.message);
+}
+}
+
 // Agregar pokemon a la DB
 const addPokemon = async(req,res)=>{
-  const { hp, attack, defense, speed, height, weight, image, type1, type2 } =
-    req.body;
-  let name = req.body.name.toLowerCase();
+  const { name,hp, attack, defense, speed, height, weight, image, types } =req.body;
+    var i=0;
+    let createdPokemon 
+    let dataBaseType
+    try {
   let pokemon = {
     id: ++dbID,
     name,
@@ -103,18 +141,26 @@ const addPokemon = async(req,res)=>{
     weight,
     image,
   };
-  try {
-    let createdPokemon = await Pokemon.create(pokemon);
-    const addType1 = await createdPokemon.addType(type1, {
-      through: "pokemon_type",
-    });
-    const addType2 = await createdPokemon.addType(type2, {
-      through: "pokemon_type",
-    });
-    return res.status(200).send(createdPokemon);
+  //console.log(pokemon)
+    createdPokemon = await Pokemon.create(pokemon);
+     //console.log(createdPokemon);
+     while(types.length>i){   
+      var currenT=types[i].name
+      console.log(currenT)
+      i++;
+    dataBaseType = await Type.findAll({
+            where: {
+                name: currenT
+                    }
+                });
+      console.log(dataBaseType)
+    createdPokemon.addType(dataBaseType);
+              }
   } catch (error) {
     return error;
   }
+ 
+return res.status(200).send(createdPokemon);
 }
 
 
@@ -124,4 +170,5 @@ module.exports = {
   getPokemonsAPI,
   getAllPokemons,
   getPokemonId,
+  getPokemonByName,
 };
