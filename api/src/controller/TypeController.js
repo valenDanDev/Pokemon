@@ -29,7 +29,7 @@ const getallTypes= async (req,res)=>{
    
        if(!Object.keys(activities).length){
          return res.status(404).json({
-           msg: "Activities not found in database"
+           msg: "types not found in database"
        })
        }
        return res.status(200).send(activities)

@@ -2,7 +2,7 @@ const { Pokemon, Type } = require("../db.js");
 const axios = require("axios");
 const { Op } = require("sequelize");
 
-let dbID = 40;
+let dbID = 10000;
 
 // trae pokemons de la API
 async function getPokemonsAPI() {
@@ -81,11 +81,11 @@ const getPokemonId= async (req, res) => {
       if (foundPokemon) {
         return res.json(foundPokemon);
       } else {
-        return res.json("El ID ingresado no pertenece a ningún pokemon");
+        return res.json("pokemon does not found with id "+id);
       }
     }
   }
-  return res.send("El ID debe ser un número").status(404);
+  return res.send("id must be a number").status(404);
 }
 
 const getPokemonByName= async (req,res)=>{
