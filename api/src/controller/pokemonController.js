@@ -3,12 +3,43 @@ const axios = require("axios");
 const { Op } = require("sequelize");
 
 let dbID = 10000;
-
+//
 // trae pokemons de la API
 async function getPokemonsAPI() {
   try {
     const response = await axios.get(
       "https://pokeapi.co/api/v2/pokemon/?limit=40"
+    );
+    const data = Promise.all(
+      response.data.results.map(async (pokemon) => {
+        let subRequest = await axios.get(pokemon.url);
+        let pokemonResult = {
+          name: subRequest.data.name,
+          id: Number(subRequest.data.id),
+          hp: subRequest.data.stats[0].base_stat,
+          attack: subRequest.data.stats[1].base_stat,
+          defense: subRequest.data.stats[2].base_stat,
+          speed: subRequest.data.stats[4].base_stat,
+          height: subRequest.data.height,
+          weight: subRequest.data.weight,
+          image: subRequest.data.sprites.other.home.front_default,
+          types: subRequest.data.types.map((type) => {
+            return { name: type.type.name };
+          }),
+          created: "false",
+        };
+        return pokemonResult;
+      })
+    );
+    return data;
+  } catch (error) {
+    return error;
+  }
+}
+async function getPokemonsAPIv2(lim) {
+  try {
+    const response = await axios.get(
+      `https://pokeapi.co/api/v2/pokemon/?offset=${lim}&limit=40`
     );
     const data = Promise.all(
       response.data.results.map(async (pokemon) => {
@@ -91,6 +122,7 @@ const getPokemonId= async (req, res) => {
 const getPokemonByName= async (req,res)=>{
   //console.log("get country by name");
   const name =req.query.q;
+  console.log({name})
   try{
     let coun= await Pokemon.findAll({
       where: {
@@ -109,13 +141,24 @@ const getPokemonByName= async (req,res)=>{
     if(!Object.keys(coun).length){
       const pokemonsApi = await getPokemonsAPI();
       const foundPokemon = pokemonsApi.find((p) => p.name === name);
-      if (foundPokemon) {
+       if (foundPokemon) {
         return res.json(foundPokemon);
-      } else {
+      }else  if(!foundPokemon){
+        let lim=40
+        while(lim<1160){
+          const pokemonsApiV2 = await getPokemonsAPIv2(lim);
+          const foundPokemonV2 = pokemonsApiV2.find((p) => p.name === name);
+          //console.log(lim)
+          if (foundPokemonV2){
+            return res.json(foundPokemonV2);
+          }
+          lim+=40
+        }
+      }
         return res.status(404).json({
           msg: `pokemon not found with name ${name}`
       })
-      }
+      
     }
     return res.status(200).json(coun)
 }catch(err){
@@ -171,4 +214,5 @@ module.exports = {
   getAllPokemons,
   getPokemonId,
   getPokemonByName,
+  getPokemonsAPIv2
 };
