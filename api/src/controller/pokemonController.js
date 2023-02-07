@@ -90,7 +90,9 @@ const getAllPokemons= async (req, res) => {
 
 // Obtener pokemon por ID
 const getPokemonId= async (req, res) => {
+  //const idPokemon = Number(req.params.id);
   const id = Number(req.params.idPokemon);
+  console.log(id)
   if (typeof id === "number") {
     const pokemonDb = await Pokemon.findOne({
       where: {
