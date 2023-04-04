@@ -1,20 +1,25 @@
-import React from 'react';
-import { Route } from "react-router-dom";
-import './App.css';
-import LandingPage from './pages/LandingPage.jsx';
-import HomePage from './pages/HomePage.jsx';
-import DetailPage from './pages/DetailPage';
-import CreatePage from './pages/CreatePage';
-
-const App = () => {
+import { Routes, Route} from "react-router-dom"
+import { Container } from "react-bootstrap"
+import { Home } from "./pages/Home"
+import { About } from "./pages/About"
+import PokePage from "./pages/Pokemons"
+import Nav from "./components/Nav"
+import Card from "./components/Card"
+import Footer from "./components/Footer"
+import Pag from "./components/Pagination"
+import DetailPage from "./components/CardDetail"
+function App() {
   return (
-      <React.Fragment>     
-          <Route exact path="/" component={LandingPage}/> 
-          <Route exact path="/pokemons" component={HomePage}/>  
-          <Route exact path="/detail/:idPokemon" component={DetailPage} />
-          <Route exact path="/pokemons/create" component={CreatePage} />
-      </React.Fragment>
-  );
+    <>
+  <Nav />
+  <Routes>
+      <Route path="/" element = {<Home />} />
+      <Route path="/about" element = {<About />} />
+      <Route path="/pokes" element = {<PokePage />} />
+      <Route path="/pokes/:id" element={<DetailPage/>} />
+    </Routes>
+  <Footer/>
+  </>)
 }
 
-export default App;
+export default App

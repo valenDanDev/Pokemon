@@ -31,12 +31,13 @@ export const getAllTypes = () => {
 }
 
 export function getPokemonById(idPokemon) {
-    //  console.log("entra");
+    console.log("entra");
       return async (dispatch) => {
         var json = await axios.get(`http://localhost:3001/pokemons/pokemon/${idPokemon}`);
+        console.log( json.data)
         return dispatch({
           type: 'GET_POKEMON_BY_ID',
-          payload: json.data[0],
+          payload: json.data,
         });
       };
     }
@@ -73,9 +74,10 @@ export function getPokemonById(idPokemon) {
 //     }
 // };
 export const searchPokemonByName = (name) =>{
-
+    console.log(name)
     return async function (dispatch) {
-        var response = await axios.get(`http://localhost:3001/pokemons?name=${name}`);
+        var response = await axios.get(`http://localhost:3001/pokemons/pokemon?q=${name}`);
+        console.log(response.data)
         return dispatch({
           type: 'SEARCH_POKEMON_BY_NAME',
           payload: response.data,

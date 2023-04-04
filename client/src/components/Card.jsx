@@ -1,28 +1,25 @@
-import React from 'react';
-import styles from './Card.module.css'
+import Button from 'react-bootstrap/Button';
+import Col from 'react-bootstrap/Col';
+import Row from 'react-bootstrap/Row';
+import Card from 'react-bootstrap/Card';
 import { Link } from "react-router-dom";
-import Colors from "../components/ColorsType.jsx";
+import Container from 'react-bootstrap/Container';
 
-const Card = ({id,name,image,types}) => {
-    
-    return (
-        <React.Fragment>
-            <Link to={`/detail/${id}`}>
-                <div className={styles.card_container}>
-                    <h3>el id {id}</h3>
-                    <h3>{name} </h3>
-                    <img className={styles.img} src={image} alt="Img not found"/>
-                    <Colors type = {typeof types[0]==="object"? types[0].name:types[0]}/>
-                    <Colors type = {typeof types[1]==="object"? types[1].name:types[1]}/>
-                    {/* <h3>{types} </h3> */}
-                    {/* {
-                        types.map((t) => {
-                            return (<Colors type = {t}/>)})
-                    } */}
-                 </div>
-            </Link>
-        </React.Fragment>
-    )
-};
+function CardPok({name,image,id}) {
+  return (
+         <Card className='m-2' style={{ width: '18rem' }}>
+           <Card.Img variant="top" src={image} alt="Img not found"/>
+             <Card.Body>
+               <Card.Title>{name}</Card.Title>
+                 <Card.Text>
+                   Some quick example text to build on the card title and make up the
+                  bulk of the card's content.
+                </Card.Text>
+             <Button variant="primary"> <Link  style={{color: 'white'}} to={`/pokes/${id}`}>  Get pokemon Details  </Link></Button>
+            
+             </Card.Body>
+        </Card>
+  );
+}
 
-export default Card;
+export default CardPok;
